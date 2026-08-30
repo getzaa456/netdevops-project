@@ -21,7 +21,6 @@
   vars:
     ansible_connection: ansible.netcommon.network_cli
     ansible_network_os: cisco.ios.ios
-    ansible_user: "{{ ansible_user }}"
     ansible_password: "{{ vault_ssh_password }}"
   tasks:
     - name: Save running-config to startup-config
