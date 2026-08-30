@@ -1,0 +1,7 @@
+*.retry
+.vault_pass
+secrets.yml
+
+*.log
+.DS_Store
+__pycache__/

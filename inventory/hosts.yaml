@@ -1,0 +1,18 @@
+all:
+  children:
+    routers:
+      hosts:
+        r-edge:
+          ansible_host: 10.10.254.1
+    switches:
+      children:
+        core_switches:
+          hosts:
+            sw-core:
+              ansible_host: 10.10.99.1
+        access_switches:
+          hosts:
+            sw-acc1:
+              ansible_host: 10.10.99.11
+            sw-acc2:
+              ansible_host: 10.10.99.12
