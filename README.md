@@ -4,8 +4,6 @@ Automated enterprise network management using **Infrastructure as Code (IaC)** p
 A simulated company network built in **GNS3**, fully managed through **Git**, **Ansible**,
 and **CI/CD pipelines** — no manual CLI configuration required.
 
-![Topology](docs/topology.png)
-
 ## 📖 Overview
 
 Traditionally, network engineers configure routers and switches manually via SSH,
@@ -23,19 +21,7 @@ one device at a time. This project applies **DevOps practices to network operati
 
 ## 🗺️ Network Topology
 
-A small enterprise LAN with 3 departments, simulated in GNS3:
-
-```
-                        Internet (NAT Cloud)
-                              │
-                        [ R-EDGE ]  Cisco IOSv — NAT, ACL, SSH
-                              │  10.10.254.0/30 (routed link)
-                        [ SW-CORE ] Cisco IOSvL2 — Inter-VLAN Routing, DHCP
-                        ┌─────┼──────────┐
-                  [ SW-ACC1 ] [ SW-ACC2 ] [ Docker Host ]
-                   VLAN 10,20   VLAN 30     VLAN 99
-                   IT / HR      Sales       Ansible · Monitoring · CI Runner
-```
+![Topology](docs/topology.jpg)
 
 ### IP / VLAN Plan
 
