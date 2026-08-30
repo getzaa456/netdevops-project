@@ -21,10 +21,9 @@
 
 - name: Save configurations
   hosts: all
+  connection: ansible.netcommon.network_cli
   gather_facts: false
-
   tasks:
     - name: Save running-config to startup-config
       cisco.ios.ios_config:
-        save_when: always
-      when: not ansible_check_mode
+        save_when: modified
