@@ -3,7 +3,7 @@
   connection: network_cli
   gather_facts: false
   vars_files:
-    - "../group_vars/all.yml"
+    - "../group_vars/all/all.yml"
   roles:
     - vlan
     - routing
@@ -15,7 +15,7 @@
   connection: network_cli
   gather_facts: false
   vars_files:
-    - "../group_vars/all.yml"
+    - "../group_vars/all/all.yml"
   roles:
     - routing
     - nat
@@ -25,7 +25,7 @@
   connection: network_cli
   gather_facts: false
   vars_files:
-    - "../group_vars/all.yml"
+    - "../group_vars/all/all.yml"
   tasks:
     - name: Save running-config to startup-config
       cisco.ios.ios_config:
