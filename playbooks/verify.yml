@@ -1,0 +1,26 @@
+---
+- name: Verify network state
+  hosts: switches
+  tasks:
+    - name: Check VLANs exist
+      cisco.ios.ios_command:
+        commands: show vlan brief
+      register: vlan_output
+
+    - name: Assert all VLANs present
+      ansible.builtin.assert:
+        that: "'{{ item.name }}' in vlan_output.stdout[0]"
+        fail_msg: "VLAN {{ item.id }} ({{ item.name }}) missing on {{ inventory_hostname }}!"
+      loop: "{{ vlans }}"
+
+- name: Verify connectivity from core
+  hosts: sw-core
+  tasks:
+    - name: Ping all gateways and edge
+      cisco.ios.ios_command:
+        commands: "ping {{ item }} repeat 2"
+      register: ping_result
+      failed_when: "'!!' not in ping_result.stdout[0]"
+      loop:
+        - 10.10.254.1
+        - 10.10.99.10

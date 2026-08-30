@@ -1,0 +1,25 @@
+---
+- name: Backup all device configurations
+  hosts: all
+  tasks:
+    - name: Fetch running-config
+      cisco.ios.ios_command:
+        commands: show running-config
+      register: running_config
+
+    - name: Save to backups directory
+      ansible.builtin.copy:
+        content: "{{ running_config.stdout[0] }}"
+        dest: "{{ playbook_dir }}/../backups/{{ inventory_hostname }}/running.cfg"
+      delegate_to: localhost
+
+- name: Commit backups to Git
+  hosts: localhost
+  gather_facts: true
+  tasks:
+    - name: Git add & commit
+      ansible.builtin.shell: |
+        cd {{ playbook_dir }}/..
+        git add backups/
+        git diff --cached --quiet || git commit -m "chore: config backup {{ ansible_date_time.date }} {{ ansible_date_time.time }}"
+      changed_when: false

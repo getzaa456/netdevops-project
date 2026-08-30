@@ -1,0 +1,21 @@
+---
+- name: Deploy switch configurations
+  hosts: switches
+  roles:
+    - vlan
+    - routing
+    - dhcp
+    - acl
+
+- name: Deploy router configurations
+  hosts: routers
+  roles:
+    - routing
+    - nat
+
+- name: Save configurations
+  hosts: all
+  tasks:
+    - name: Save running-config to startup-config
+      cisco.ios.ios_config:
+        save_when: modified
