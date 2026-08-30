@@ -12,6 +12,8 @@ ansible_ssh_common_args: >-
   -o KexAlgorithms=+diffie-hellman-group14-sha1
   -o HostKeyAlgorithms=+ssh-rsa
   -o PubkeyAcceptedAlgorithms=+ssh-rsa
+  -o MACs=+hmac-sha1,hmac-sha1-96
+  -o PreferredAuthentications=password,keyboard-interactive
 
 domain_name: lab.local
 dns_server: 8.8.8.8
