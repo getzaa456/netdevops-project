@@ -2,9 +2,6 @@
   hosts: switches
   connection: network_cli
   gather_facts: false
-  vars_files:
-    - "../group_vars/all/all.yml"
-    - "../group_vars/all/vault.yml"
   roles:
     - vlan
     - routing
@@ -15,9 +12,6 @@
   hosts: routers
   connection: network_cli
   gather_facts: false
-  vars_files:
-    - "../group_vars/all/all.yml"
-    - "../group_vars/all/vault.yml"
   roles:
     - routing
     - nat
@@ -26,9 +20,6 @@
   hosts: all
   connection: network_cli
   gather_facts: false
-  vars_files:
-    - "../group_vars/all/all.yml"
-    - "../group_vars/all/vault.yml"
   tasks:
     - name: Save running-config to startup-config
       cisco.ios.ios_config:
