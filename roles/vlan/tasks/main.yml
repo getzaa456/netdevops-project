@@ -2,7 +2,7 @@
 - name: Build VLAN config list
   ansible.builtin.set_fact:
     _vlan_config: "{{ _vlan_config | default([]) + [{'vlan_id': item.id, 'name': item.name}] }}"
-  loop: "{{ vlans }}"
+  loop: "{{ vlans | default([]) }}"
 
 - name: Create VLANs
   cisco.ios.ios_vlans:
