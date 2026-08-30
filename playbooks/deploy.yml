@@ -17,6 +17,7 @@
 
 - name: Save configurations
   hosts: all
+  connection: network_cli
   gather_facts: false
   tasks:
     - name: Save running-config to startup-config
