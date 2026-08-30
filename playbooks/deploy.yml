@@ -1,30 +1,31 @@
----
 - name: Deploy switch configurations
   hosts: switches
+  connection: network_cli
   gather_facts: false
-
+  vars_files:
+    - "../group_vars/all.yml"
   roles:
     - vlan
     - routing
     - dhcp
     - acl
 
-
 - name: Deploy router configurations
   hosts: routers
+  connection: network_cli
   gather_facts: false
-
+  vars_files:
+    - "../group_vars/all.yml"
   roles:
     - routing
     - nat
 
-
 - name: Save configurations
   hosts: all
-  connection: ansible.netcommon.network_cli
+  connection: network_cli
   gather_facts: false
-  vars:
-    ansible_network_os: cisco.ios.ios
+  vars_files:
+    - "../group_vars/all.yml"
   tasks:
     - name: Save running-config to startup-config
       cisco.ios.ios_config:
