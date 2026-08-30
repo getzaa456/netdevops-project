@@ -1,6 +1,10 @@
 ---
 - name: Deploy switch configurations
   hosts: switches
+  tasks:
+    - name: DEBUG check vlans before roles
+      ansible.builtin.debug:
+        var: vlans
   roles:
     - vlan
     - routing
