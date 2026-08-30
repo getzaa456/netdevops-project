@@ -1,17 +1,23 @@
 ---
 - name: Deploy switch configurations
   hosts: switches
+  gather_facts: false
+
   roles:
     - vlan
     - routing
     - dhcp
     - acl
 
+
 - name: Deploy router configurations
   hosts: routers
+  gather_facts: false
+
   roles:
     - routing
     - nat
+
 
 - name: Save configurations
   hosts: all
@@ -19,6 +25,6 @@
 
   tasks:
     - name: Save running-config to startup-config
-      ansible.netcommon.cli_command:
-        command: copy running-config startup-config
+      cisco.ios.ios_config:
+        save_when: always
       when: not ansible_check_mode
