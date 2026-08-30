@@ -19,7 +19,6 @@
       - switchport trunk allowed vlan {{ item.allowed_vlans }}
     parents: "interface {{ item.name }}"
   loop: "{{ trunk_interfaces | default([]) }}"
-  when: trunk_interfaces is defined and (trunk_interfaces | length > 0)
 
 - name: Configure access interfaces
   cisco.ios.ios_config:
