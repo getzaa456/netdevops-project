@@ -1,7 +1,6 @@
+---
 - name: Deploy switch configurations
   hosts: switches
-  connection: network_cli
-  gather_facts: false
   roles:
     - vlan
     - routing
@@ -10,16 +9,12 @@
 
 - name: Deploy router configurations
   hosts: routers
-  connection: network_cli
-  gather_facts: false
   roles:
     - routing
     - nat
 
 - name: Save configurations
   hosts: all
-  connection: network_cli
-  gather_facts: false
   tasks:
     - name: Save running-config to startup-config
       cisco.ios.ios_config:
