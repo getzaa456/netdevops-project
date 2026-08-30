@@ -15,7 +15,11 @@
 
 - name: Commit backups to Git
   hosts: localhost
+  connection: local
   gather_facts: true
+  vars:
+    ansible_connection: local
+    ansible_network_os: null
   tasks:
     - name: Git add & commit
       ansible.builtin.shell: |
