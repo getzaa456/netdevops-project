@@ -18,10 +18,6 @@
 - name: Save configurations
   hosts: all
   gather_facts: false
-  vars:
-    ansible_connection: ansible.netcommon.network_cli
-    ansible_network_os: cisco.ios.ios
-    ansible_password: "{{ vault_ssh_password }}"
   tasks:
     - name: Save running-config to startup-config
       cisco.ios.ios_config:
