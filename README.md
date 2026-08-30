@@ -135,4 +135,4 @@ ansible-playbook playbooks/backup.yml
 ## 📚 Documentation
 
 - [IP & VLAN Plan](docs/ip-plan.md)
-- [Topology Diagram](docs/topology.png)
+- [Topology Diagram](docs/topology.jpg)
