@@ -1,0 +1,12 @@
+---
+- name: Configure NAT ACL
+  cisco.ios.ios_config:
+    lines: "{{ nat_networks | map('regex_replace', '^', 'permit ') | list }}"
+    parents: ip access-list standard {{ nat_acl_name }}
+  when: nat_acl_name is defined
+
+- name: Configure NAT overload
+  cisco.ios.ios_config:
+    lines:
+      - ip nat inside source list {{ nat_acl_name }} interface {{ nat_outside_interface }} overload
+  when: nat_acl_name is defined

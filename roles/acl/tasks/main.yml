@@ -1,0 +1,15 @@
+---
+- name: Configure extended ACLs
+  cisco.ios.ios_config:
+    lines: "{{ item.rules }}"
+    parents: ip access-list extended {{ item.name }}
+    match: exact
+    replace: block
+  loop: "{{ acls | default([]) }}"
+
+- name: Apply ACLs to interfaces
+  cisco.ios.ios_config:
+    lines:
+      - ip access-group {{ item.name }} {{ item.direction }}
+    parents: interface {{ item.apply_to }}
+  loop: "{{ acls | default([]) }}"

@@ -1,0 +1,15 @@
+---
+- name: Exclude addresses from DHCP
+  cisco.ios.ios_config:
+    lines:
+      - ip dhcp excluded-address {{ item.start }} {{ item.end }}
+  loop: "{{ dhcp_excluded | default([]) }}"
+
+- name: Configure DHCP pools
+  cisco.ios.ios_config:
+    lines:
+      - network {{ item.network }} {{ item.mask }}
+      - default-router {{ item.gateway }}
+      - dns-server {{ dns_server }}
+    parents: ip dhcp pool {{ item.name }}
+  loop: "{{ dhcp_pools | default([]) }}"
