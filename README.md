@@ -1,4 +1,4 @@
-# 🌐 Network as Code — Enterprise Network Automation Lab
+# 🌐 NetDevOps — Enterprise Network Automation Project
 
 Automated enterprise network management using **Infrastructure as Code (IaC)** principles.
 A simulated company network built in **GNS3**, fully managed through **Git**, **Ansible**,
