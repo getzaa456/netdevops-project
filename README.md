@@ -61,16 +61,19 @@ one device at a time. This project applies **DevOps practices to network operati
 | **Prometheus + Grafana** | Network monitoring & dashboards                   |
 
 ## 📁 Repository Structure
-
 ```
-├── inventory/          # Device inventory (hosts, management IPs)
-├── group_vars/         # Shared variables — VLANs, credentials (vaulted)
-├── host_vars/          # Per-device variables (SVIs, DHCP pools)
-├── roles/              # Ansible roles: vlan, routing, dhcp, acl
-├── playbooks/          # deploy.yml, backup.yml
-├── backups/            # Auto-backed-up device configurations
-├── docs/               # Topology diagram, IP plan, design notes
-└── tests/              # Post-deployment validation
+├── ansible.cfg          # Ansible configuration
+├── inventory/
+│   ├── hosts.yml        # Device inventory (hosts, management IPs)
+│   ├── group_vars/all/  # Shared variables — VLANs (all.yml), credentials (vault.yml)
+│   └── host_vars/       # Per-device variables (SVIs, DHCP pools, ACLs, NAT)
+├── roles/               # Ansible roles: vlan, routing, dhcp, acl, nat
+├── playbooks/
+│   ├── deploy.yml       # Push configuration to all devices
+│   ├── backup.yml       # Backup running-config + commit to Git
+│   └── verify.yml       # Post-deployment validation
+├── backups/             # Auto-backed-up device configurations
+└── docs/                # Topology diagram, IP plan, design notes
 ```
 
 ## 🚀 Usage
