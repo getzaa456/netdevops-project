@@ -1,7 +1,6 @@
 ---
 - name: Deploy switch configurations
   hosts: switches
-  gather_facts: false
   roles:
     - vlan
     - routing
@@ -10,17 +9,12 @@
 
 - name: Deploy router configurations
   hosts: routers
-  gather_facts: false
   roles:
     - routing
     - nat
 
 - name: Save configurations
   hosts: all
-  connection: network_cli
-  gather_facts: false
-  vars:
-    ansible_network_os: cisco.ios.ios   # <-- เพิ่ม 2 บรรทัดนี้
   tasks:
     - name: Save running-config to startup-config
       cisco.ios.ios_config:
