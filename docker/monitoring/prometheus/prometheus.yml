@@ -1,0 +1,21 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'snmp_switches'
+    static_configs:
+      - targets:
+        - 10.10.99.1   # sw-core
+        - 10.10.99.11  # sw-acc1
+        - 10.10.99.12  # sw-acc2
+        - 10.10.254.1  # r-edge
+    metrics_path: /snmp
+    params:
+      module: [if_mib]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: snmp-exporter:9116
