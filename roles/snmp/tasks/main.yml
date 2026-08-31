@@ -3,3 +3,9 @@
   cisco.ios.ios_config:
     lines:
       - "snmp-server community public RO"
+
+- name: Configure Syslog logging to Docker Host
+  cisco.ios.ios_config:
+    lines:
+      - "logging host 10.10.99.10"
+      - "logging trap informational"
