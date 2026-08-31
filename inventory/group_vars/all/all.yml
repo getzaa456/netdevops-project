@@ -22,4 +22,5 @@ vlans:
   - { id: 10, name: IT,          subnet: 10.10.10.0/24, gateway: 10.10.10.1 }
   - { id: 20, name: HR,          subnet: 10.10.20.0/24, gateway: 10.10.20.1 }
   - { id: 30, name: SALES,       subnet: 10.10.30.0/24, gateway: 10.10.30.1 }
+  - { id: 40, name: MARKETING,   subnet: 10.10.40.0/24, gateway: 10.10.40.1 }
   - { id: 99, name: SERVER-MGMT, subnet: 10.10.99.0/24, gateway: 10.10.99.1 }
