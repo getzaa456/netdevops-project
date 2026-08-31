@@ -126,13 +126,23 @@ ansible-playbook playbooks/backup.yml
               lint                                                   SSH tests
 ```
 
+## 📊 Services (Docker Host — 10.10.99.10)
+
+| Service    | Port | Purpose              |
+|------------|------|----------------------|
+| Grafana    | 3000 | Dashboards           |
+| Prometheus | 9090 | Metrics collection   |
+| SNMP Exporter | 9116 | Poll network devices |
+| Syslog     | 514  | Device logs          |
+| CI Runner  | —    | GitHub Actions       |
+
 ## 🗓️ Project Roadmap
 
 - [x] **Phase 1** — Build GNS3 topology, manual baseline configuration
 - [x] **Phase 2** — Git repository structure, Source of Truth, Vault
-- [ ] **Phase 3** — Ansible roles & playbooks (VLAN, routing, DHCP, ACL, backup)
-- [ ] **Phase 4** — CI/CD pipeline with GitHub Actions + self-hosted runner
-- [ ] **Phase 5** — Monitoring stack (Prometheus, Grafana, SNMP exporter, syslog)
+- [x] **Phase 3** — Ansible roles & playbooks (VLAN, routing, DHCP, ACL, backup)
+- [x] **Phase 4** — CI/CD pipeline with GitHub Actions + self-hosted runner
+- [x] **Phase 5** — Monitoring stack (Prometheus, Grafana, SNMP exporter, syslog)
 - [ ] **Phase 6** *(optional)* — Terraform GNS3 provider, NetBox integration
 
 ## 📚 Documentation
