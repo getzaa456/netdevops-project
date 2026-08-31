@@ -6,12 +6,14 @@
     - routing
     - dhcp
     - acl
+    - snmp
 
 - name: Deploy router configurations
   hosts: routers
   roles:
     - routing
     - nat
+    - snmp
 
 - name: Save configurations
   hosts: all
