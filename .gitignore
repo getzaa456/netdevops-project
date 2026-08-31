@@ -5,3 +5,5 @@ secrets.yml
 *.log
 .DS_Store
 __pycache__/
+
+actions-runner/

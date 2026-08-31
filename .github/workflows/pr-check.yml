@@ -1,0 +1,29 @@
+name: PR Check (Lint & Dry-run)
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Linters
+        run: pip install yamllint ansible-lint
+      - name: Run yamllint
+        # Lint stage: ใช้เครื่องมือ yamllint
+        run: yamllint .
+      - name: Run ansible-lint
+        # Lint stage: ใช้เครื่องมือ ansible-lint
+        run: ansible-lint playbooks/deploy.yml
+
+  dry-run:
+    needs: lint
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v3
+      - name: Create Vault Password File
+        run: echo "${{ secrets.VAULT_PASSWORD }}" > .vault_pass
+      - name: Ansible Dry-run
+        # Test stage: รัน playbook แบบ --check (ไม่แก้จริง)
+        run: ansible-playbook playbooks/deploy.yml --check --diff

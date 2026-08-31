@@ -1,0 +1,32 @@
+name: Deploy Network Config
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy-and-verify:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v3
+      - name: Create Vault Password File
+        run: echo "${{ secrets.VAULT_PASSWORD }}" > .vault_pass
+        
+      - name: Deploy Config
+        # Deploy stage: push config จริง[cite: 1]
+        run: ansible-playbook playbooks/deploy.yml
+        
+      - name: Verify Network
+        # Verify stage: ทดสอบอัตโนมัติ เช่นใช้ Ansible ตรวจว่า OSPF neighbor ครบ, ping สำเร็จ[cite: 1]
+        run: ansible-playbook playbooks/verify.yml
+        
+      - name: Backup Config
+        run: ansible-playbook playbooks/backup.yml
+        
+      - name: Commit Backup
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+          git add backups/
+          # ป้องกัน error หากไม่มีอะไรเปลี่ยนแปลง
+          git commit -m "chore: auto-backup running configs" || exit 0
+          git push
