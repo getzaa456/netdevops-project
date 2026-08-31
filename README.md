@@ -10,11 +10,11 @@ Traditionally, network engineers configure routers and switches manually via SSH
 one device at a time. This project applies **DevOps practices to network operations
 (NetDevOps)**:
 
-- 📦 All network configuration lives in this Git repository (**Single Source of Truth**)
-- 🤖 **Ansible** renders and pushes configurations to all devices automatically
-- 🔀 Changes go through **branch → Pull Request → review → CI/CD → deploy**
-- 📊 **Prometheus + Grafana** monitor the network in real time
-- ⏪ Every change is versioned — full history and easy rollback
+-  All network configuration lives in this Git repository (**Single Source of Truth**)
+-  **Ansible** renders and pushes configurations to all devices automatically
+-  Changes go through **branch → Pull Request → review → CI/CD → deploy**
+-  **Prometheus + Grafana** monitor the network in real time
+-  Every change is versioned — full history and easy rollback
 
 > **Example:** Adding a new department (VLAN) = editing ~5 lines of YAML
 > and opening a Pull Request. The pipeline handles the rest.
@@ -62,18 +62,21 @@ one device at a time. This project applies **DevOps practices to network operati
 
 ## 📁 Repository Structure
 ```
-├── ansible.cfg          # Ansible configuration
-├── inventory/
-│   ├── hosts.yml        # Device inventory (hosts, management IPs)
-│   ├── group_vars/all/  # Shared variables — VLANs (all.yml), credentials (vault.yml)
-│   └── host_vars/       # Per-device variables (SVIs, DHCP pools, ACLs, NAT)
-├── roles/               # Ansible roles: vlan, routing, dhcp, acl, nat
-├── playbooks/
-│   ├── deploy.yml       # Push configuration to all devices
-│   ├── backup.yml       # Backup running-config + commit to Git
-│   └── verify.yml       # Post-deployment validation
+├── README.md            # Project description and documentation
+├── actions-runner/      # GitHub Actions self-hosted runner environment
+├── ansible.cfg          # Global Ansible configuration
 ├── backups/             # Auto-backed-up device configurations
-└── docs/                # Topology diagram, IP plan, design notes
+├── docker/              # Docker Compose services (Prometheus, Grafana)
+├── docs/                # Topology diagrams and IP planning notes
+├── inventory/
+│   ├── group_vars/      # Shared variables (VLANs, vaulted credentials)
+│   ├── host_vars/       # Per-device variables (SVIs, DHCP pools, ACLs)
+│   └── hosts.yml        # Device inventory and management IPs
+├── playbooks/
+│   ├── backup.yml       # Backup running-config task
+│   ├── deploy.yml       # Push configuration to all devices
+│   └── verify.yml       # Post-deployment validation
+└── roles/               # Ansible roles (acl, dhcp, nat, routing, snmp, vlan)
 ```
 
 ## 🚀 Usage
@@ -126,13 +129,22 @@ ansible-playbook playbooks/backup.yml
               lint                                                   SSH tests
 ```
 
+## 📊 Services (Docker Host — 10.10.99.10)
+
+| Service    | Port | Purpose              |
+|------------|------|----------------------|
+| Grafana    | 3000 | Dashboards           |
+| Prometheus | 9090 | Metrics collection   |
+| SNMP Exporter | 9116 | Poll network devices |
+| CI Runner  | —    | GitHub Actions       |
+
 ## 🗓️ Project Roadmap
 
 - [x] **Phase 1** — Build GNS3 topology, manual baseline configuration
 - [x] **Phase 2** — Git repository structure, Source of Truth, Vault
-- [ ] **Phase 3** — Ansible roles & playbooks (VLAN, routing, DHCP, ACL, backup)
-- [ ] **Phase 4** — CI/CD pipeline with GitHub Actions + self-hosted runner
-- [ ] **Phase 5** — Monitoring stack (Prometheus, Grafana, SNMP exporter, syslog)
+- [x] **Phase 3** — Ansible roles & playbooks (VLAN, routing, DHCP, ACL, backup)
+- [x] **Phase 4** — CI/CD pipeline with GitHub Actions + self-hosted runner
+- [x] **Phase 5** — Monitoring stack (Prometheus, Grafana, SNMP exporter)
 - [ ] **Phase 6** *(optional)* — Terraform GNS3 provider, NetBox integration
 
 ## 📚 Documentation
