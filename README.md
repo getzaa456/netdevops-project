@@ -49,7 +49,7 @@ one device at a time. This project applies **DevOps practices to network operati
 - All devices accessible via SSH only (no telnet), local auth
 - Secrets encrypted with **Ansible Vault** — no plaintext credentials in this repo
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Tool                     | Role                                              |
 |--------------------------|---------------------------------------------------|
@@ -118,7 +118,7 @@ ansible-playbook playbooks/backup.yml
 5. After review and merge, the pipeline **deploys to all devices** and runs
    post-deployment tests
 
-> ⚠️ Direct pushes to `main` are blocked. All changes must go through a PR.
+> Direct pushes to `main` are blocked. All changes must go through a PR.
 
 ## CI/CD Pipeline
 
