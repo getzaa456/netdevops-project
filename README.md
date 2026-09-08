@@ -1,10 +1,10 @@
-# 🌐 NetDevOps — Enterprise Network Automation Project
+# NetDevOps — Enterprise Network Automation Project
 
 Automated enterprise network management using **Infrastructure as Code (IaC)** principles.
 A simulated company network built in **GNS3**, fully managed through **Git**, **Ansible**,
 and **CI/CD pipelines** — no manual CLI configuration required.
 
-## 📖 Overview
+## Overview
 
 Traditionally, network engineers configure routers and switches manually via SSH,
 one device at a time. This project applies **DevOps practices to network operations
@@ -19,7 +19,7 @@ one device at a time. This project applies **DevOps practices to network operati
 > **Example:** Adding a new department (VLAN) = editing ~5 lines of YAML
 > and opening a Pull Request. The pipeline handles the rest.
 
-## 🗺️ Network Topology
+## Network Topology
 
 ![Topology](docs/topology.jpg)
 
@@ -60,7 +60,7 @@ one device at a time. This project applies **DevOps practices to network operati
 | **Docker**               | Runs monitoring stack & CI runner                 |
 | **Prometheus + Grafana** | Network monitoring & dashboards                   |
 
-## 📁 Repository Structure
+## Repository Structure
 ```
 ├── README.md            # Project description and documentation
 ├── actions-runner/      # GitHub Actions self-hosted runner environment
@@ -79,7 +79,7 @@ one device at a time. This project applies **DevOps practices to network operati
 └── roles/               # Ansible roles (acl, dhcp, nat, routing, snmp, vlan)
 ```
 
-## 🚀 Usage
+## Usage
 
 ### Prerequisites
 
@@ -103,7 +103,7 @@ ansible-playbook playbooks/deploy.yml
 ansible-playbook playbooks/backup.yml
 ```
 
-### ✏️ How to Make a Change (e.g., add a new VLAN)
+### How to Make a Change (e.g., add a new VLAN)
 
 1. Create a branch: `git checkout -b feature/add-vlan-40`
 2. Edit `group_vars/all.yml` — add the new VLAN entry:
@@ -120,7 +120,7 @@ ansible-playbook playbooks/backup.yml
 
 > ⚠️ Direct pushes to `main` are blocked. All changes must go through a PR.
 
-## 🔀 CI/CD Pipeline
+## CI/CD Pipeline
 
 ```
  Push / PR ──► Lint ──► Dry-run ──► [Manual Approve] ──► Deploy ──► Verify
@@ -129,7 +129,7 @@ ansible-playbook playbooks/backup.yml
               lint                                                   SSH tests
 ```
 
-## 📊 Services (Docker Host — 10.10.99.10)
+## Services (Docker Host — 10.10.99.10)
 
 | Service    | Port | Purpose              |
 |------------|------|----------------------|
@@ -138,7 +138,7 @@ ansible-playbook playbooks/backup.yml
 | SNMP Exporter | 9116 | Poll network devices |
 | CI Runner  | —    | GitHub Actions       |
 
-## 🗓️ Project Roadmap
+## Project Roadmap
 
 - [x] **Phase 1** — Build GNS3 topology, manual baseline configuration
 - [x] **Phase 2** — Git repository structure, Source of Truth, Vault
@@ -147,7 +147,7 @@ ansible-playbook playbooks/backup.yml
 - [x] **Phase 5** — Monitoring stack (Prometheus, Grafana, SNMP exporter)
 - [ ] **Phase 6** *(optional)* — Terraform GNS3 provider, NetBox integration
 
-## 📚 Documentation
+## Documentation
 
 - [IP & VLAN Plan](docs/ip-plan.md)
 - [Topology Diagram](docs/topology.jpg)
