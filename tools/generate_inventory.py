@@ -188,6 +188,8 @@ def load_config(path: Path) -> dict[str, Any]:
         create_svi = True if create_svi_raw in (None, "") else is_enabled(create_svi_raw)
 
         dhcp_raw = row.get("DHCP Enabled")
+        if dhcp_raw in (None, ""):
+            dhcp_raw = row.get("DHCP")
         dhcp_enabled = True if dhcp_raw in (None, "") else is_enabled(dhcp_raw)
 
         excluded_start = clean(row.get("DHCP Exclude Start"))
@@ -207,17 +209,21 @@ def load_config(path: Path) -> dict[str, Any]:
             if start_ip not in network or end_ip not in network or start_ip > end_ip:
                 raise ConfigError(f"{line}: invalid DHCP exclusion range")
 
-        access_device = clean(row.get("Access Device"))
-        access_interface = clean(row.get("Access Interface"))
-        access_description = clean(row.get("Access Description"))
+        # Simple Excel workflow: Device/Interface live directly on the VLAN row.
+        # Legacy Access Device/Access Interface headers remain supported.
+        access_device = clean(row.get("Device") or row.get("Access Device"))
+        access_interface = clean(row.get("Interface") or row.get("Access Interface"))
+        access_description = clean(
+            row.get("Description") or row.get("Access Description")
+        )
         if bool(access_device) != bool(access_interface):
             raise ConfigError(
-                f"{line}: Access Device and Access Interface must be filled together"
+                f"{line}: Device and Interface must be filled together"
             )
         if access_device and access_device not in devices:
-            raise ConfigError(f"{line}: unknown Access Device '{access_device}'")
+            raise ConfigError(f"{line}: unknown Device '{access_device}'")
         if access_device and devices[access_device]["type"] == "router":
-            raise ConfigError(f"{line}: Access Device cannot be a router")
+            raise ConfigError(f"{line}: Device cannot be a router")
 
         vlans.append(
             {
