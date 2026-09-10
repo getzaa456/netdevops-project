@@ -63,12 +63,22 @@ def read_table(workbook: Any, sheet_name: str) -> list[dict[str, Any]]:
         raise ConfigError(f"Missing required sheet: {sheet_name}")
 
     sheet = workbook[sheet_name]
-    headers = [clean(cell.value) for cell in sheet[1]]
-    if not any(headers):
+
+    headers: list[str] = []
+    for cell in sheet[1]:
+        header = clean(cell.value)
+        if not header:
+            break
+        headers.append(header)
+
+    if not headers:
         raise ConfigError(f"Sheet {sheet_name} has no headers")
 
     rows: list[dict[str, Any]] = []
-    for excel_row, values in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
+    for excel_row, values in enumerate(
+        sheet.iter_rows(min_row=2, max_col=len(headers), values_only=True),
+        start=2,
+    ):
         if not any(value not in (None, "") for value in values):
             continue
         row = dict(zip(headers, values))
