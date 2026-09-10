@@ -1,23 +1,26 @@
 ---
-- name: Deploy switch configurations
+- name: Configure switching infrastructure
   hosts: switches
+  gather_facts: false
   roles:
-    - vlan
-    - routing
-    - dhcp
-    - acl
-    - snmp
+    - role: vlan
+    - role: routing
+    - role: dhcp
+    - role: acl
+    - role: snmp
 
-- name: Deploy router configurations
+- name: Configure edge routing
   hosts: routers
+  gather_facts: false
   roles:
-    - routing
-    - nat
-    - snmp
+    - role: routing
+    - role: nat
+    - role: snmp
 
-- name: Save configurations
+- name: Save device configurations
   hosts: all
+  gather_facts: false
   tasks:
-    - name: Save running-config to startup-config
+    - name: Save running configuration when modified
       cisco.ios.ios_config:
         save_when: modified

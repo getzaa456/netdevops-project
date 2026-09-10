@@ -1,6 +1,11 @@
+---
+# Routing toward the internal network.
 static_routes:
-  - { prefix: 10.10.0.0, mask: 255.255.0.0, next_hop: 10.10.254.2 }
+  - prefix: 10.10.0.0
+    mask: 255.255.0.0
+    next_hop: 10.10.254.2
 
+# NAT configuration.
 nat_acl_name: NAT-INSIDE
 nat_networks:
   - 10.10.0.0 0.0.255.255

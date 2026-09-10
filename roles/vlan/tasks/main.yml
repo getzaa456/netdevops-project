@@ -1,28 +1,38 @@
 ---
-- name: Build VLAN config list
+- name: Build VLAN configuration
   ansible.builtin.set_fact:
-    _vlan_config: "{{ _vlan_config | default([]) + [{'vlan_id': item.id, 'name': item.name}] }}"
+    vlan_config: >-
+      {{
+        vlan_config | default([])
+        + [{'vlan_id': item.id, 'name': item.name}]
+      }}
   loop: "{{ vlans }}"
+  loop_control:
+    label: "VLAN {{ item.id }} - {{ item.name }}"
 
 - name: Create VLANs
   cisco.ios.ios_vlans:
-    config: "{{ _vlan_config }}"
+    config: "{{ vlan_config }}"
     state: merged
 
 - name: Configure trunk interfaces
   cisco.ios.ios_config:
+    parents: "interface {{ item.name }}"
     lines:
       - switchport trunk encapsulation dot1q
       - switchport mode trunk
-      - switchport trunk allowed vlan {{ item.allowed_vlans }}
-    parents: interface {{ item.name }}
+      - "switchport trunk allowed vlan {{ item.allowed_vlans }}"
   loop: "{{ trunk_interfaces | default([]) }}"
+  loop_control:
+    label: "{{ item.name }}"
 
 - name: Configure access interfaces
   cisco.ios.ios_config:
+    parents: "interface {{ item.name }}"
     lines:
-      - description {{ item.description }}
+      - "description {{ item.description }}"
       - switchport mode access
-      - switchport access vlan {{ item.vlan }}
-    parents: interface {{ item.name }}
+      - "switchport access vlan {{ item.vlan }}"
   loop: "{{ access_interfaces | default([]) }}"
+  loop_control:
+    label: "{{ item.name }} -> VLAN {{ item.vlan }}"

@@ -1,8 +1,14 @@
+---
 create_svis: false
 
 trunk_interfaces:
-  - { name: GigabitEthernet0/0, allowed_vlans: "30,40,99" }
+  - name: GigabitEthernet0/0
+    allowed_vlans: "30,40,99"
 
 access_interfaces:
-  - { name: GigabitEthernet0/1, vlan: 30, description: PC-SALES }
-  - { name: GigabitEthernet0/2, vlan: 40, description: PC-MARKETING }
+  - name: GigabitEthernet0/1
+    vlan: 30
+    description: PC-SALES
+  - name: GigabitEthernet0/2
+    vlan: 40
+    description: PC-MARKETING
