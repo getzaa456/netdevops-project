@@ -460,6 +460,7 @@ def generate(config: dict[str, Any]) -> list[Path]:
         "snmp_community": clean(settings["snmp_community"]),
         "syslog_host": clean(settings["syslog_host"]),
         "syslog_level": clean(settings["syslog_level"]),
+        "dhcp_server_device": config["dhcp_server_device"],
         "vlans": [
             {
                 "id": vlan["id"],

@@ -1,15 +1,26 @@
 ---
+- name: Remove DHCP pools for VLANs deleted from Excel
+  cisco.ios.ios_config:
+    lines:
+      - "no ip dhcp pool VLAN{{ item }}"
+  loop: "{{ stale_vlan_ids | default([]) }}"
+  loop_control:
+    label: "VLAN{{ item }}"
+  when: inventory_hostname == dhcp_server_device
+
 - name: Exclude addresses from DHCP
   cisco.ios.ios_config:
     lines:
-      - ip dhcp excluded-address {{ item.start }} {{ item.end }}
+      - "ip dhcp excluded-address {{ item.start }} {{ item.end }}"
   loop: "{{ dhcp_excluded | default([]) }}"
+  when: inventory_hostname == dhcp_server_device
 
 - name: Configure DHCP pools
   cisco.ios.ios_config:
     lines:
-      - network {{ item.network }} {{ item.mask }}
-      - default-router {{ item.gateway }}
-      - dns-server {{ dns_server }}
-    parents: ip dhcp pool {{ item.name }}
+      - "network {{ item.network }} {{ item.mask }}"
+      - "default-router {{ item.gateway }}"
+      - "dns-server {{ dns_server }}"
+    parents: "ip dhcp pool {{ item.name }}"
   loop: "{{ dhcp_pools | default([]) }}"
+  when: inventory_hostname == dhcp_server_device

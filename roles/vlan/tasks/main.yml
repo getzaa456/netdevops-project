@@ -1,19 +1,54 @@
 ---
-- name: Build VLAN configuration
+# Excel is the source of truth for user-managed VLANs.
+# VLANs present on the switch but absent from Excel are removed, except
+# Cisco reserved/default VLANs protected below.
+
+- name: Gather current VLAN configuration
+  cisco.ios.ios_vlans:
+    state: gathered
+  register: current_vlan_state
+
+- name: Build desired VLAN ID list
   ansible.builtin.set_fact:
-    vlan_config: >-
+    desired_vlan_ids: "{{ vlans | default([]) | map(attribute='id') | map('int') | list }}"
+    protected_vlan_ids: [1, 1002, 1003, 1004, 1005]
+
+- name: Find VLANs missing from Excel
+  ansible.builtin.set_fact:
+    stale_vlan_ids: >-
       {{
-        vlan_config | default([])
-        + [{'vlan_id': item.id, 'name': item.name}]
+        current_vlan_state.gathered
+        | default([])
+        | map(attribute='vlan_id')
+        | map('int')
+        | list
+        | difference(desired_vlan_ids + protected_vlan_ids)
+        | sort
       }}
-  loop: "{{ vlans }}"
+
+- name: Show VLANs that will be removed
+  ansible.builtin.debug:
+    msg: "Removing VLANs not present in Excel: {{ stale_vlan_ids }}"
+  when: stale_vlan_ids | length > 0
+
+- name: Delete VLANs missing from Excel
+  cisco.ios.ios_vlans:
+    config:
+      - vlan_id: "{{ item }}"
+    state: deleted
+  loop: "{{ stale_vlan_ids }}"
+  loop_control:
+    label: "VLAN {{ item }}"
+
+- name: Create or update VLANs from Excel
+  cisco.ios.ios_vlans:
+    config:
+      - vlan_id: "{{ item.id }}"
+        name: "{{ item.name }}"
+    state: merged
+  loop: "{{ vlans | default([]) }}"
   loop_control:
     label: "VLAN {{ item.id }} - {{ item.name }}"
-
-- name: Create VLANs
-  cisco.ios.ios_vlans:
-    config: "{{ vlan_config }}"
-    state: merged
 
 - name: Configure trunk interfaces
   cisco.ios.ios_config:
