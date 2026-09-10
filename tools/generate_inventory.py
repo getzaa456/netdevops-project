@@ -159,7 +159,9 @@ def load_config(path: Path) -> dict[str, Any]:
     vlans: list[dict[str, Any]] = []
     vlan_ids: set[int] = set()
     for row in read_table(workbook, "VLANs"):
-        if not is_enabled(row.get("Enabled")):
+        # A populated VLAN row is enabled by default. Set Enabled=FALSE to disable it.
+        enabled_raw = row.get("Enabled")
+        if enabled_raw not in (None, "") and not is_enabled(enabled_raw):
             continue
         line = f"VLANs row {row['_row']}"
         try:
@@ -181,16 +183,41 @@ def load_config(path: Path) -> dict[str, Any]:
         if gateway not in network or gateway in {network.network_address, network.broadcast_address}:
             raise ConfigError(f"{line}: gateway {gateway} is not a usable host in {network}")
 
-        dhcp_enabled = is_enabled(row.get("DHCP Enabled"))
+        # One-row VLAN workflow: blank SVI/DHCP cells use lab defaults.
+        create_svi_raw = row.get("Create SVI")
+        create_svi = True if create_svi_raw in (None, "") else is_enabled(create_svi_raw)
+
+        dhcp_raw = row.get("DHCP Enabled")
+        dhcp_enabled = True if dhcp_raw in (None, "") else is_enabled(dhcp_raw)
+
         excluded_start = clean(row.get("DHCP Exclude Start"))
         excluded_end = clean(row.get("DHCP Exclude End"))
         if dhcp_enabled:
-            if not excluded_start or not excluded_end:
-                raise ConfigError(f"{line}: DHCP exclusion start/end are required")
-            start_ip = ipaddress.ip_address(validate_ip(excluded_start, f"{line}/DHCP Exclude Start"))
-            end_ip = ipaddress.ip_address(validate_ip(excluded_end, f"{line}/DHCP Exclude End"))
+            first_usable = network.network_address + 1
+            default_end = min(network.network_address + 10, network.broadcast_address - 1)
+            excluded_start = excluded_start or str(first_usable)
+            excluded_end = excluded_end or str(default_end)
+
+            start_ip = ipaddress.ip_address(
+                validate_ip(excluded_start, f"{line}/DHCP Exclude Start")
+            )
+            end_ip = ipaddress.ip_address(
+                validate_ip(excluded_end, f"{line}/DHCP Exclude End")
+            )
             if start_ip not in network or end_ip not in network or start_ip > end_ip:
                 raise ConfigError(f"{line}: invalid DHCP exclusion range")
+
+        access_device = clean(row.get("Access Device"))
+        access_interface = clean(row.get("Access Interface"))
+        access_description = clean(row.get("Access Description"))
+        if bool(access_device) != bool(access_interface):
+            raise ConfigError(
+                f"{line}: Access Device and Access Interface must be filled together"
+            )
+        if access_device and access_device not in devices:
+            raise ConfigError(f"{line}: unknown Access Device '{access_device}'")
+        if access_device and devices[access_device]["type"] == "router":
+            raise ConfigError(f"{line}: Access Device cannot be a router")
 
         vlans.append(
             {
@@ -198,10 +225,13 @@ def load_config(path: Path) -> dict[str, Any]:
                 "name": name,
                 "subnet": str(network),
                 "gateway": str(gateway),
-                "create_svi": is_enabled(row.get("Create SVI")),
+                "create_svi": create_svi,
                 "dhcp_enabled": dhcp_enabled,
                 "dhcp_excluded_start": excluded_start,
                 "dhcp_excluded_end": excluded_end,
+                "access_device": access_device,
+                "access_interface": access_interface,
+                "access_description": access_description or name,
             }
         )
 
@@ -243,21 +273,33 @@ def load_config(path: Path) -> dict[str, Any]:
                 {"name": interface, "vlan": access_vlan, "description": description}
             )
         elif mode == "trunk":
-            allowed_text = clean(row.get("Allowed VLANs"))
-            try:
-                allowed = [int(part.strip()) for part in allowed_text.split(",") if part.strip()]
-            except ValueError as exc:
-                raise ConfigError(f"{line}: Allowed VLANs must be comma-separated integers") from exc
-            if not allowed:
-                raise ConfigError(f"{line}: Allowed VLANs is required for trunk mode")
-            unknown = sorted(set(allowed) - vlan_ids)
-            if unknown:
-                raise ConfigError(f"{line}: unknown allowed VLAN(s): {unknown}")
+            # Every enabled VLAN is allowed on all lab trunk interfaces automatically.
+            allowed = sorted(vlan_ids)
             ports_by_device[device]["trunk_interfaces"].append(
                 {"name": interface, "allowed_vlans": ",".join(str(v) for v in allowed)}
             )
         else:
             raise ConfigError(f"{line}: Mode must be access or trunk")
+
+    # Optional access-port assignment can be configured in the same VLAN row.
+    for vlan in vlans:
+        device = vlan["access_device"]
+        interface = vlan["access_interface"]
+        if not device:
+            continue
+        key = (device, interface)
+        if key in seen_interfaces:
+            raise ConfigError(
+                f"VLAN {vlan['id']}: access interface {device}/{interface} is already defined in Ports"
+            )
+        seen_interfaces.add(key)
+        ports_by_device[device]["access_interfaces"].append(
+            {
+                "name": interface,
+                "vlan": vlan["id"],
+                "description": vlan["access_description"],
+            }
+        )
 
     # Routes
     routes_by_device: dict[str, list[dict[str, str]]] = defaultdict(list)
