@@ -1,29 +1,92 @@
-name: PR Check (Lint & Dry-run)
+name: PR Check
+
 on:
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
+    paths:
+      - 'network-config.xlsx'
+      - 'tools/**'
+      - 'inventory/**'
+      - 'roles/**'
+      - 'playbooks/**'
+      - 'ansible.cfg'
+      - '.github/workflows/**'
+  workflow_dispatch:
 
 jobs:
-  lint:
+  validate-excel:
+    name: Validate Excel and generated YAML
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-      - name: Install Linters
-        run: pip install yamllint ansible-lint
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tools/requirements.txt
+
+      - name: Install generator dependencies
+        run: python -m pip install -r tools/requirements.txt
+
+      - name: Verify Excel source exists
+        run: |
+          test -f network-config.xlsx || {
+            echo ERROR: network-config.xlsx is missing from the repository root.
+            exit 1
+          }
+
+      - name: Validate Excel configuration
+        run: python tools/generate_inventory.py --check
+
+      - name: Generate Ansible inventory from Excel
+        run: python tools/generate_inventory.py
+
+      - name: Show generated inventory diff
+        run: git diff -- inventory/ || true
+
+      - name: Install Ansible linters
+        run: python -m pip install yamllint ansible-lint
+
       - name: Run yamllint
-        # Lint stage: ใช้เครื่องมือ yamllint
-        run: yamllint .
+        run: yamllint inventory playbooks roles
+
       - name: Run ansible-lint
-        # Lint stage: ใช้เครื่องมือ ansible-lint
         run: ansible-lint playbooks/deploy.yml
 
   dry-run:
-    needs: lint
+    name: Ansible dry-run
+    needs: validate-excel
     runs-on: self-hosted
+
     steps:
-      - uses: actions/checkout@v3
-      - name: Create Vault Password File
-        run: echo "${{ secrets.VAULT_PASSWORD }}" > .vault_pass
-      - name: Ansible Dry-run
-        # Test stage: รัน playbook แบบ --check (ไม่แก้จริง)
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Excel generator dependencies
+        shell: bash
+        run: python3 -m pip install --user -r tools/requirements.txt
+
+      - name: Validate and generate inventory
+        shell: bash
+        run: |
+          python3 tools/generate_inventory.py --check
+          python3 tools/generate_inventory.py
+
+      - name: Create Ansible Vault password file
+        shell: bash
+        run: |
+          printf '%s' "${{ secrets.VAULT_PASSWORD }}" > .vault_pass
+          chmod 600 .vault_pass
+
+      - name: Ansible syntax check
+        shell: bash
+        run: ansible-playbook playbooks/deploy.yml --syntax-check
+
+      - name: Ansible check mode
+        shell: bash
         run: ansible-playbook playbooks/deploy.yml --check --diff
