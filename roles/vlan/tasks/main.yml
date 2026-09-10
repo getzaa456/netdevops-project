@@ -50,6 +50,15 @@
   loop_control:
     label: "VLAN {{ item.id }} - {{ item.name }}"
 
+- name: Ensure VLANs from Excel are not shutdown
+  cisco.ios.ios_config:
+    parents: "vlan {{ item.id }}"
+    lines:
+      - no shutdown
+  loop: "{{ vlans | default([]) }}"
+  loop_control:
+    label: "VLAN {{ item.id }} - no shutdown"
+
 - name: Configure trunk interfaces
   cisco.ios.ios_config:
     parents: "interface {{ item.name }}"
@@ -57,7 +66,6 @@
       - switchport trunk encapsulation dot1q
       - switchport mode trunk
       - "switchport trunk allowed vlan {{ item.allowed_vlans }}"
-      - no shutdown
   loop: "{{ trunk_interfaces | default([]) }}"
   loop_control:
     label: "{{ item.name }}"
@@ -69,7 +77,6 @@
       - "description {{ item.description }}"
       - switchport mode access
       - "switchport access vlan {{ item.vlan }}"
-      - no shutdown
   loop: "{{ access_interfaces | default([]) }}"
   loop_control:
     label: "{{ item.name }} -> VLAN {{ item.vlan }}"
