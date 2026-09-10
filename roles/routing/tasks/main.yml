@@ -1,14 +1,18 @@
 ---
-- name: Create SVIs for each VLAN (core only)
+- name: Create SVIs for enabled VLANs
   cisco.ios.ios_config:
     lines:
-      - ip address {{ item.gateway }} {{ item.subnet | ansible.utils.ipaddr('netmask') }}
+      - "ip address {{ item.gateway }} {{ item.subnet | ansible.utils.ipaddr('netmask') }}"
       - no shutdown
-    parents: interface Vlan{{ item.id }}
+    parents: "interface Vlan{{ item.id }}"
   loop: "{{ vlans }}"
-  when: create_svis | default(false)
+  loop_control:
+    label: "VLAN {{ item.id }} - {{ item.name }}"
+  when:
+    - create_svis | default(false)
+    - item.create_svi | default(true)
 
-- name: Enable IP routing (core only)
+- name: Enable IP routing on Layer 3 switches
   cisco.ios.ios_config:
     lines:
       - ip routing
@@ -17,5 +21,7 @@
 - name: Configure static routes
   cisco.ios.ios_config:
     lines:
-      - ip route {{ item.prefix }} {{ item.mask }} {{ item.next_hop }}
+      - "ip route {{ item.prefix }} {{ item.mask }} {{ item.next_hop }}"
   loop: "{{ static_routes | default([]) }}"
+  loop_control:
+    label: "{{ item.prefix }}/{{ item.mask }} via {{ item.next_hop }}"

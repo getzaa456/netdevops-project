@@ -1,32 +1,94 @@
 name: Deploy Network Config
+
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
+    paths:
+      - 'network-config.xlsx'
+      - 'tools/**'
+      - 'inventory/**'
+      - 'roles/**'
+      - 'playbooks/**'
+      - 'ansible.cfg'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: network-production
+  cancel-in-progress: false
 
 jobs:
-  deploy-and-verify:
+  validate-generate-deploy:
+    name: Validate, generate and deploy
     runs-on: self-hosted
+
     steps:
-      - uses: actions/checkout@v3
-      - name: Create Vault Password File
-        run: echo "${{ secrets.VAULT_PASSWORD }}" > .vault_pass
-        
-      - name: Deploy Config
-        # Deploy stage: push config จริง[cite: 1]
-        run: ansible-playbook playbooks/deploy.yml
-        
-      - name: Verify Network
-        # Verify stage: ทดสอบอัตโนมัติ เช่นใช้ Ansible ตรวจว่า OSPF neighbor ครบ, ping สำเร็จ[cite: 1]
-        run: ansible-playbook playbooks/verify.yml
-        
-      - name: Backup Config
-        run: ansible-playbook playbooks/backup.yml
-        
-      - name: Commit Backup
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify Excel source exists
+        shell: bash
         run: |
-          git config --global user.name "GitHub Actions Bot"
-          git config --global user.email "actions@github.com"
+          test -f network-config.xlsx || {
+            echo ERROR: network-config.xlsx is missing from the repository root.
+            exit 1
+          }
+
+      - name: Install Excel generator dependencies
+        shell: bash
+        run: python3 -m pip install --user -r tools/requirements.txt
+
+      - name: Validate Excel configuration
+        shell: bash
+        run: python3 tools/generate_inventory.py --check
+
+      - name: Generate Ansible inventory from Excel
+        shell: bash
+        run: python3 tools/generate_inventory.py
+
+      - name: Show generated configuration changes
+        shell: bash
+        run: git diff -- inventory/ || true
+
+      - name: Create Ansible Vault password file
+        shell: bash
+        run: |
+          printf '%s' "${{ secrets.VAULT_PASSWORD }}" > .vault_pass
+          chmod 600 .vault_pass
+
+      - name: Syntax check
+        shell: bash
+        run: ansible-playbook playbooks/deploy.yml --syntax-check
+
+      - name: Deploy configuration
+        shell: bash
+        run: ansible-playbook playbooks/deploy.yml
+
+      - name: Verify network state
+        shell: bash
+        run: ansible-playbook playbooks/verify.yml
+
+      - name: Backup device configurations
+        shell: bash
+        run: ansible-playbook playbooks/backup.yml
+
+      - name: Commit updated backups
+        shell: bash
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
           git add backups/
-          # ป้องกัน error หากไม่มีอะไรเปลี่ยนแปลง
-          git commit -m "chore: auto-backup running configs" || exit 0
+
+          if git diff --cached --quiet; then
+            echo No backup changes to commit.
+            exit 0
+          fi
+
+          git commit -m "chore: auto-backup running configs [skip ci]"
           git push

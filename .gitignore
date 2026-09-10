@@ -7,3 +7,5 @@ secrets.yml
 __pycache__/
 
 actions-runner/
+
+.serena/
