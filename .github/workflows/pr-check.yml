@@ -36,7 +36,7 @@ jobs:
       - name: Verify Excel source exists
         run: |
           test -f network-config.xlsx || {
-            echo ERROR: network-config.xlsx is missing from the repository root.
+            echo "ERROR: network-config.xlsx is missing from the repository root."
             exit 1
           }
 
@@ -67,15 +67,31 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Verify Excel source exists
+        shell: bash
+        run: |
+          test -f network-config.xlsx || {
+            echo "ERROR: network-config.xlsx is missing from the repository root."
+            exit 1
+          }
+
+      - name: Create Python virtual environment
+        shell: bash
+        run: |
+          rm -rf .venv
+          python3 -m venv .venv
+
       - name: Install Excel generator dependencies
         shell: bash
-        run: python3 -m pip install --user -r tools/requirements.txt
+        run: |
+          .venv/bin/python -m pip install --upgrade pip
+          .venv/bin/python -m pip install -r tools/requirements.txt
 
       - name: Validate and generate inventory
         shell: bash
         run: |
-          python3 tools/generate_inventory.py --check
-          python3 tools/generate_inventory.py
+          .venv/bin/python tools/generate_inventory.py --check
+          .venv/bin/python tools/generate_inventory.py
 
       - name: Create Ansible Vault password file
         shell: bash

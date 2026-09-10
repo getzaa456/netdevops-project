@@ -5,6 +5,8 @@ secrets.yml
 *.log
 .DS_Store
 __pycache__/
+.venv/
+~$*.xlsx
 
 actions-runner/
 

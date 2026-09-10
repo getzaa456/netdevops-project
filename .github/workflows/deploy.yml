@@ -36,21 +36,29 @@ jobs:
         shell: bash
         run: |
           test -f network-config.xlsx || {
-            echo ERROR: network-config.xlsx is missing from the repository root.
+            echo "ERROR: network-config.xlsx is missing from the repository root."
             exit 1
           }
 
+      - name: Create Python virtual environment
+        shell: bash
+        run: |
+          rm -rf .venv
+          python3 -m venv .venv
+
       - name: Install Excel generator dependencies
         shell: bash
-        run: python3 -m pip install --user -r tools/requirements.txt
+        run: |
+          .venv/bin/python -m pip install --upgrade pip
+          .venv/bin/python -m pip install -r tools/requirements.txt
 
       - name: Validate Excel configuration
         shell: bash
-        run: python3 tools/generate_inventory.py --check
+        run: .venv/bin/python tools/generate_inventory.py --check
 
       - name: Generate Ansible inventory from Excel
         shell: bash
-        run: python3 tools/generate_inventory.py
+        run: .venv/bin/python tools/generate_inventory.py
 
       - name: Show generated configuration changes
         shell: bash
@@ -86,7 +94,7 @@ jobs:
           git add backups/
 
           if git diff --cached --quiet; then
-            echo No backup changes to commit.
+            echo "No backup changes to commit."
             exit 0
           fi
 
